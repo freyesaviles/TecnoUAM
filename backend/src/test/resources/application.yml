@@ -1,0 +1,29 @@
+spring:
+  application:
+    name: tecnouam-backend
+  datasource:
+    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/tecnouam}
+    username: ${DATABASE_USERNAME:tecnouam}
+    password: ${DATABASE_PASSWORD:tecnouam_dev_only}
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        format_sql: true
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+  sql:
+    init:
+      mode: never
+
+server:
+  port: ${SERVER_PORT:8080}
+
+app:
+  jwt:
+    secret: ${JWT_SECRET:replace-this-with-a-random-secret-of-at-least-32-characters}
+    expiration-minutes: ${JWT_EXPIRATION_MINUTES:120}
+
