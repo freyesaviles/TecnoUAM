@@ -24,7 +24,7 @@ input {
 
 .app-shell {
   display: grid;
-  grid-template-columns: minmax(260px, 0.75fr) minmax(0, 1.5fr);
+  grid-template-columns: minmax(330px, 0.95fr) minmax(0, 1.4fr);
   min-height: 100vh;
 }
 
@@ -32,7 +32,9 @@ input {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  padding: clamp(2rem, 8vw, 7rem);
+  min-width: 0;
+  overflow: hidden;
+  padding: clamp(2rem, 5vw, 6rem);
   color: #f4f6f2;
   background: #102a43;
 }
@@ -56,9 +58,9 @@ p {
 }
 
 h1 {
-  max-width: 8ch;
+  max-width: 10ch;
   margin-bottom: 1.5rem;
-  font-size: clamp(3.2rem, 6vw, 6.5rem);
+  font-size: clamp(3rem, 5vw, 6rem);
   letter-spacing: -0.07em;
   line-height: 0.92;
 }
@@ -176,4 +178,3 @@ code {
     max-width: 10ch;
   }
 }
-
