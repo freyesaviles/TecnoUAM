@@ -1,0 +1,40 @@
+{
+  "info": {
+    "name": "TecnoUAM - Servicios Web",
+    "description": "Colección base para documentar las pruebas del examen. Se completará con los casos de CRUD, préstamo, devolución y seguridad.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080/api"
+    },
+    {
+      "key": "token",
+      "value": ""
+    },
+    {
+      "key": "equipoId",
+      "value": "1"
+    },
+    {
+      "key": "prestamoId",
+      "value": "1"
+    }
+  ],
+  "item": [
+    {
+      "name": "Salud del backend",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/health",
+          "host": ["{{baseUrl}}"],
+          "path": ["health"]
+        }
+      }
+    }
+  ]
+}
+

@@ -1,0 +1,25 @@
+# Java / Maven
+backend/target/
+*.class
+
+# Node / Vite
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+
+# Local configuration and secrets
+.env
+.env.*
+!.env.example
+backend/src/main/resources/application-local.yml
+
+# IDEs and operating system files
+.idea/
+*.iml
+.vscode/
+.DS_Store
+
+# Test and coverage output
+coverage/
+*.log
+
