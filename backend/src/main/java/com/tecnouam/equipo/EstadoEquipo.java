@@ -1,4 +1,4 @@
-package com.tecnouam.model;
+package com.tecnouam.equipo;
 
 public enum EstadoEquipo {
     DISPONIBLE,

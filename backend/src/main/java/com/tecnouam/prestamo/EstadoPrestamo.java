@@ -1,4 +1,4 @@
-package com.tecnouam.model;
+package com.tecnouam.prestamo;
 
 public enum EstadoPrestamo {
     ACTIVO,
