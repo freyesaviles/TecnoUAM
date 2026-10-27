@@ -25,7 +25,7 @@ su propia rama y dejar commits identificables con su nombre de usuario de Git.
 Rama: `feature/fernando-integracion`
 
 - mantener la configuración compartida, README, variables de entorno y Docker;
-- integrar las ramas del equipo en `develop` y preparar la entrega en `main`;
+- integrar las ramas del equipo en `main` y preparar la entrega final;
 - crear y mantener la colección Postman;
 - ejecutar los casos funcionales positivos y negativos;
 - documentar capturas, resultados y pasos de demostración;
@@ -162,7 +162,7 @@ subir `.env`, contraseñas reales ni secretos JWT al repositorio.
 
 ## Flujo de ramas y commits
 
-Cada integrante trabaja en su rama y abre un pull request hacia `develop`.
+Cada integrante trabaja en su rama y abre un pull request hacia `main`.
 Los commits deben ser pequeños, verificables y seguir esta forma:
 
 ```text
@@ -176,7 +176,7 @@ Antes de abrir un pull request:
 
 ```bash
 git fetch origin
-git rebase origin/develop
+git rebase origin/main
 git status
 ```
 

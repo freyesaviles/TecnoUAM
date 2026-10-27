@@ -25,7 +25,8 @@ Base del proyecto
                                            +--> React y Postman
 ```
 
-Las ramas pueden crearse desde `develop` y abrir pull requests en ese orden.
+Las ramas pueden crearse desde `main` y abrir pull requests hacia `main` en ese
+orden.
 Si alguien necesita avanzar antes, puede coordinar contratos de DTO y rutas en
 un documento para evitar conflictos.
 
@@ -43,4 +44,3 @@ un documento para evitar conflictos.
 Antes de cada merge, el integrante explica al menos un caso que el docente
 podría preguntar. La defensa debe demostrar aportes identificables de los cinco
 y comprensión del sistema completo.
-

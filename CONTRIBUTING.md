@@ -4,7 +4,7 @@
 
 1. Clona el repositorio y configura `.env` a partir de `.env.example`.
 2. Crea una rama con el nombre de tu responsabilidad.
-3. No trabajes directamente sobre `main` ni `develop`.
+3. No trabajes directamente sobre `main`.
 
 ## Commits
 
@@ -31,6 +31,5 @@ El pull request debe incluir:
 - evidencia visual cuando aplique;
 - riesgos o pasos pendientes.
 
-Antes de solicitar revisión, actualiza tu rama con `develop` y confirma que no
+Antes de solicitar revisión, actualiza tu rama con `main` y confirma que no
 se incluyan secretos ni archivos generados.
-
