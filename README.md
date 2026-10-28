@@ -209,3 +209,12 @@ trabajo. Las funcionalidades evaluadas se incorporan en las ramas asignadas.
 - Un equipo con préstamos activos no puede eliminarse.
 - React consulta datos de la API con un JWT real y no usa datos simulados.
 - Postman incluye los casos positivos y negativos exigidos por el examen.
+
+  Credenciales del Login:
+  Como administrador:
+  User: admin
+  Password: admin123
+
+  Como usuario:
+  User: user
+  Password: user123
