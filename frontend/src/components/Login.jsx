@@ -17,7 +17,9 @@ const Login = ({ onLoginSuccess }) => {
         try {
             const res = await api.post('/auth/login', credenciales);
             const token = res.data.token;
-            localStorage.setItem('jwt_token', token);
+
+            localStorage.setItem('token', token);
+
             onLoginSuccess();
         } catch (err) {
             setError('Credenciales inválidas. Inténtalo de nuevo.');

@@ -22,7 +22,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JwtTokenProvider tokenProvider;
     private final CustomUserDetailsService customUserDetailsService;
 
-    // Se agrega @Lazy en el parámetro para romper la referencia circular
     public JwtAuthenticationFilter(JwtTokenProvider tokenProvider, @Lazy CustomUserDetailsService customUserDetailsService) {
         this.tokenProvider = tokenProvider;
         this.customUserDetailsService = customUserDetailsService;
@@ -32,17 +31,30 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
 
-        String token = obtenerJwtDelRequest(request);
+        try {
+            String token = obtenerJwtDelRequest(request);
 
-        if (StringUtils.hasText(token) && tokenProvider.validarToken(token)) {
-            String username = tokenProvider.obtenerUsernameDelToken(token);
+            // Log para ver si el token llega al backend
+            if (token != null) {
+                System.out.println(" Token recibido en el backend: " + token.substring(0, 15) + "...");
+            } else {
+                System.out.println("⚠️ No se recibió token en la ruta: " + request.getRequestURI());
+            }
 
-            UserDetails userDetails = customUserDetailsService.loadUserByUsername(username);
-            UsernamePasswordAuthenticationToken authentication =
-                    new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-            authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+            if (StringUtils.hasText(token) && tokenProvider.validarToken(token)) {
+                String username = tokenProvider.obtenerUsernameDelToken(token);
+                System.out.println(" Token válido. Usuario extraído: " + username);
 
-            SecurityContextHolder.getContext().setAuthentication(authentication);
+                UserDetails userDetails = customUserDetailsService.loadUserByUsername(username);
+                UsernamePasswordAuthenticationToken authentication =
+                        new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+                authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+
+                SecurityContextHolder.getContext().setAuthentication(authentication);
+                System.out.println(" Autenticación establecida en el contexto de seguridad.");
+            }
+        } catch (Exception ex) {
+            System.out.println(" ERROR EN EL FILTRO JWT: " + ex.getMessage());
         }
 
         filterChain.doFilter(request, response);
@@ -50,7 +62,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private String obtenerJwtDelRequest(HttpServletRequest request) {
         String bearerToken = request.getHeader("Authorization");
-        if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")) {
+
+        // Log para ver la cabecera cruda
+        if (bearerToken != null) {
+            System.out.println(" Cabecera Authorization recibida: " + bearerToken.substring(0, Math.min(bearerToken.length(), 20)) + "...");
+        }
+
+        if (StringUtils.hasText(bearerToken) && bearerToken.toLowerCase().startsWith("bearer ")) {
             return bearerToken.substring(7);
         }
         return null;

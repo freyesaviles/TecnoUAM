@@ -7,17 +7,26 @@ const EquiposList = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
-    // Reemplaza la función fetchEquipos con esto:
     const fetchEquipos = async () => {
         try {
             setLoading(true);
             setError(null);
 
-            const response = await api.get('/equipos');
+            // 1. Recuperamos el token almacenado al hacer login
+            const token = localStorage.getItem('token');
+
+            // 2. Adjuntamos el token en los headers de la petición
+            const response = await api.get('/equipos', {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
+
             setEquipos(response.data);
             setLoading(false);
         } catch (err) {
-            setError('Error al cargar los equipos.');
+            console.error(err);
+            setError('Error al cargar los equipos. Verifica tus permisos o si tu sesión expiró.');
             setLoading(false);
         }
     };
