@@ -1,40 +1,105 @@
-// frontend/src/App.jsx
-import { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import Login from './components/Login';
 import EquiposList from './components/EquiposList';
 
 function App() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+    const [isAuthenticated, setIsAuthenticated] = useState(
+        !!localStorage.getItem('jwt_token')
+    );
 
-  useEffect(() => {
-    const token = localStorage.getItem('jwt_token');
-    if (token) {
-      setIsAuthenticated(true);
-    }
-  }, []);
+    const handleLogout = () => {
+        localStorage.removeItem('jwt_token');
+        setIsAuthenticated(false);
+    };
 
-  const handleLogout = () => {
-    localStorage.removeItem('jwt_token');
-    setIsAuthenticated(false);
-  };
+    return (
+        <div style={styles.appContainer}>
+            {/* Navbar con fondo oscuro oficial (#1d242e) y acentos turquesa */}
+            <header style={styles.header}>
+                <div style={styles.headerContent}>
+                    <div style={styles.brandGroup}>
+                        <span style={styles.logoText}>UAM</span>
+                        <span style={styles.divider}>|</span>
+                        <span style={styles.systemName}>TecnoUAM — Panel</span>
+                    </div>
 
-  return (
-      <div>
-        <header style={{ padding: '10px', backgroundColor: '#333', color: 'white', display: 'flex', justifyContent: 'space-between' }}>
-          <h1>TecnoUAM - Panel</h1>
-          {isAuthenticated && <button onClick={handleLogout}>Cerrar Sesión</button>}
-        </header>
+                    {isAuthenticated && (
+                        <button onClick={handleLogout} style={styles.logoutButton}>
+                            Cerrar Sesión
+                        </button>
+                    )}
+                </div>
+            </header>
 
-        <main>
-          {!isAuthenticated ? (
-              <Login onLoginSuccess={() => setIsAuthenticated(true)} />
-          ) : (
-              <EquiposList />
-          )}
-        </main>
-      </div>
-  );
+            {/* Contenido principal */}
+            <main style={styles.mainContent}>
+                {!isAuthenticated ? (
+                    <Login onLoginSuccess={() => setIsAuthenticated(true)} />
+                ) : (
+                    <EquiposList />
+                )}
+            </main>
+        </div>
+    );
 }
 
-export default App;
+const styles = {
+    appContainer: {
+        minHeight: '100vh',
+        backgroundColor: '#f4f6f8',
+        fontFamily: "'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
+    },
+    header: {
+        backgroundColor: '#1d242e', // Azul marino oscuro exacto de la web UAM
+        color: '#ffffff',
+        padding: '20px 36px',
+        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+        borderBottom: '4px solid #00a3ad', // Franja turquesa UAM
+    },
+    headerContent: {
+        width: '100%',
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+    },
+    brandGroup: {
+        display: 'flex',
+        alignItems: 'center',
+        gap: '14px',
+    },
+    logoText: {
+        fontSize: '28px',
+        fontWeight: '900',
+        color: '#00a3ad', // Turquesa característico del logo UAM
+        letterSpacing: '1px',
+        fontFamily: "'Trebuchet MS', sans-serif",
+    },
+    divider: {
+        color: '#4a5568',
+        fontSize: '22px',
+        fontWeight: '300',
+    },
+    systemName: {
+        fontSize: '20px',
+        fontWeight: '600',
+        color: '#ffffff',
+        whiteSpace: 'nowrap',
+        letterSpacing: '-0.2px',
+    },
+    logoutButton: {
+        backgroundColor: '#0e507d', // Azul oscuro complementario
+        color: '#ffffff',
+        border: 'none',
+        padding: '10px 20px',
+        borderRadius: '6px',
+        cursor: 'pointer',
+        fontSize: '14px',
+        fontWeight: '600',
+        transition: 'background-color 0.2s',
+    },
+    mainContent: {
+        padding: '40px 20px',
+    },
+};
 
+export default App;

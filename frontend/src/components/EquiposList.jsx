@@ -7,24 +7,15 @@ const EquiposList = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
+    // Reemplaza la función fetchEquipos con esto:
     const fetchEquipos = async () => {
         try {
             setLoading(true);
             setError(null);
 
-            // Descomentar cuando Max termine:
-            // const response = await api.get('/equipos');
-            // setEquipos(response.data);
-
-            // Simulación temporal para maquetar:
-            setTimeout(() => {
-                setEquipos([
-                    { id: 1, codigoPatrimonial: 'PC-001', nombre: 'Laptop Dell XPS', tipo: 'Computadora', estado: 'DISPONIBLE' },
-                    { id: 2, codigoPatrimonial: 'PR-102', nombre: 'Proyector Epson', tipo: 'Audiovisual', estado: 'PRESTADO' }
-                ]);
-                setLoading(false);
-            }, 1000);
-
+            const response = await api.get('/equipos');
+            setEquipos(response.data);
+            setLoading(false);
         } catch (err) {
             setError('Error al cargar los equipos.');
             setLoading(false);
