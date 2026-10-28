@@ -5,15 +5,20 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Component;
 
+import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.util.Date;
+import java.util.List;
 
 @Component
 public class JwtTokenProvider {
 
-    private final Key key = Keys.secretKeyFor(SignatureAlgorithm.HS512);
+    // Clave secreta fija de al menos 512 bits para HS512
+    private static final String SECRET_KEY_STRING = "TecnoUAMSecretKeyParaFirmarTokensJWTPréstamosEquipos2026TecnoUAMSecretKeyDebeSerLarga";
+    private final Key key = Keys.hmacShaKeyFor(SECRET_KEY_STRING.getBytes(StandardCharsets.UTF_8));
     private final long jwtExpirationInMs = 86400000; // 24 horas
 
     public String generarToken(Authentication authentication) {
@@ -21,11 +26,16 @@ public class JwtTokenProvider {
         Date ahora = new Date();
         Date fechaExpiracion = new Date(ahora.getTime() + jwtExpirationInMs);
 
+        List<String> roles = authentication.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .toList();
+
         return Jwts.builder()
                 .setSubject(username)
+                .claim("roles", roles)
                 .setIssuedAt(ahora)
                 .setExpiration(fechaExpiracion)
-                .signWith(key)
+                .signWith(key, SignatureAlgorithm.HS512)
                 .compact();
     }
 

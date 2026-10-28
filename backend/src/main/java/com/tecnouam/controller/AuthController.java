@@ -5,12 +5,14 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -26,7 +28,7 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> authenticateUser(@RequestBody Map<String, String> loginDto) {
+    public ResponseEntity<Map<String, Object>> authenticateUser(@RequestBody Map<String, String> loginDto) {
         String username = loginDto.get("username");
         String password = loginDto.get("password");
 
@@ -36,9 +38,15 @@ public class AuthController {
 
         String token = tokenProvider.generarToken(authentication);
 
-        Map<String, String> respuesta = new HashMap<>();
+        List<String> roles = authentication.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .toList();
+
+        Map<String, Object> respuesta = new HashMap<>();
         respuesta.put("token", token);
         respuesta.put("type", "Bearer");
+        respuesta.put("username", authentication.getName());
+        respuesta.put("roles", roles);
 
         return ResponseEntity.ok(respuesta);
     }
