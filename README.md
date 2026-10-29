@@ -24,7 +24,7 @@ su propia rama y dejar commits identificables con su nombre de usuario de Git.
 
 Rama: `feature/fernando-integracion`
 
-- mantener la configuración compartida, README, variables de entorno y Docker;
+- mantener la configuración compartida, README y variables de entorno;
 - integrar las ramas del equipo en `main` y preparar la entrega final;
 - crear y mantener la colección Postman;
 - ejecutar los casos funcionales positivos y negativos;
@@ -121,7 +121,8 @@ el conocimiento que debe tener el equipo completo.
 - Java 21 o superior
 - Maven 3.9 o superior
 - Node.js 20 o superior y npm
-- Docker Desktop
+- PostgreSQL 15 o superior
+- pgAdmin 4 (opcional, para administrar visualmente PostgreSQL)
 
 ## Inicio rápido
 
@@ -131,11 +132,14 @@ el conocimiento que debe tener el equipo completo.
    cp .env.example .env
    ```
 
-2. Levantar PostgreSQL:
+2. Crear la base de datos desde pgAdmin:
 
-   ```bash
-   docker compose up -d postgres
-   ```
+   - Conéctate al servidor local `localhost:5432`.
+   - Crea una base de datos llamada `tecnouam`.
+   - Usa en `.env` las mismas credenciales de esa instalación.
+
+   pgAdmin administra PostgreSQL; el servidor PostgreSQL debe estar instalado y
+   ejecutándose en la computadora.
 
 3. Iniciar el backend:
 
@@ -143,6 +147,9 @@ el conocimiento que debe tener el equipo completo.
    cd backend
    mvn spring-boot:run
    ```
+
+   Flyway crea las tablas y carga los datos demo de
+   `backend/src/main/resources/db/migration/`.
 
 4. En otra terminal, instalar dependencias e iniciar React:
 
@@ -154,6 +161,51 @@ el conocimiento que debe tener el equipo completo.
 
 El frontend queda en `http://localhost:5173` y el backend en
 `http://localhost:8080`.
+
+## Probar el login en React
+
+Abre `http://localhost:5173` después de iniciar backend y frontend.
+
+### Como administrador
+
+```text
+Usuario: admin
+Contraseña: admin123
+```
+
+La cabecera mostrará `admin · ADMIN`. El administrador tiene permisos para
+crear, actualizar y eliminar equipos, registrar préstamos y devolverlos. Las
+operaciones administrativas se demuestran en Postman.
+
+### Como usuario
+
+Cierra sesión y usa:
+
+```text
+Usuario: user
+Contraseña: user123
+```
+
+La cabecera mostrará `user · USER`. Puede consultar la lista de equipos y
+préstamos, pero el backend rechazará las operaciones administrativas con `403`.
+React muestra la consulta protegida de equipos; Postman permite demostrar las
+diferencias completas entre ambos roles.
+
+## Probar con Postman
+
+Importa `postman/TecnoUAM.postman_collection.json` y ejecuta las carpetas en
+este orden:
+
+1. `01 - Autenticación` obtiene y guarda automáticamente los tokens de
+   `admin` y `user`.
+2. `02 - Seguridad` comprueba `401`, `403` y consulta autenticada.
+3. `03 - Equipos` crea, consulta y actualiza equipos.
+4. `04 - Préstamos y devolución` prueba préstamo duplicado, eliminación
+   bloqueada, devolución, liberación y eliminación permitida.
+
+La colección genera códigos y fechas de prueba automáticamente. Sus variables
+se almacenan en la colección, por lo que no hay que copiar manualmente los
+tokens entre solicitudes.
 
 ## Variables de entorno
 
@@ -180,11 +232,11 @@ git rebase origin/main
 git status
 ```
 
-## Estado inicial
+## Estado actual
 
-La base actual contiene configuración compartida, PostgreSQL reproducible,
-esqueleto ejecutable de Spring Boot, shell visual de React y documentación de
-trabajo. Las funcionalidades evaluadas se incorporan en las ramas asignadas.
+La base actual contiene configuración compartida, migraciones Flyway para
+PostgreSQL local, backend Spring Boot con JWT, frontend React autenticado,
+colección Postman y documentación de pruebas.
 
 ## Endpoints objetivo
 
@@ -200,6 +252,16 @@ trabajo. Las funcionalidades evaluadas se incorporan en las ramas asignadas.
 | `POST` | `/api/prestamos` | `ADMIN` |
 | `PUT` | `/api/prestamos/{id}/devolver` | `ADMIN` |
 
+## Cuentas demo
+
+Las cuentas están pensadas únicamente para la demostración académica y se
+mantienen en memoria:
+
+| Usuario | Contraseña | Rol |
+| --- | --- | --- |
+| `admin` | `admin123` | `ADMIN` |
+| `user` | `user123` | `USER` |
+
 ## Criterios de aceptación
 
 - Las respuestas usan `201`, `200`, `204`, `400`, `401`, `403`, `404` y `409`
@@ -209,15 +271,3 @@ trabajo. Las funcionalidades evaluadas se incorporan en las ramas asignadas.
 - Un equipo con préstamos activos no puede eliminarse.
 - React consulta datos de la API con un JWT real y no usa datos simulados.
 - Postman incluye los casos positivos y negativos exigidos por el examen.
-
-
----
-
-  Credenciales del Login:
-  Como administrador:
-  User: admin
-  Password: admin123
-
-  Como usuario:
-  User: user
-  Password: user123
