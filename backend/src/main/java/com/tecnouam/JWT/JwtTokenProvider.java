@@ -16,8 +16,8 @@ import java.util.List;
 @Component
 public class JwtTokenProvider {
 
-    // Clave secreta fija de al menos 512 bits para HS512
-    private static final String SECRET_KEY_STRING = "TecnoUAMSecretKeyParaFirmarTokensJWTPréstamosEquipos2026TecnoUAMSecretKeyDebeSerLarga";
+    // Clave secreta sin caracteres especiales para evitar problemas de codificación UTF-8
+    private static final String SECRET_KEY_STRING = "TecnoUAMSecretKeyParaFirmarTokensJWTPrestamosEquipos2026TecnoUAMSecretKeyDebeSerLarga";
     private final Key key = Keys.hmacShaKeyFor(SECRET_KEY_STRING.getBytes(StandardCharsets.UTF_8));
     private final long jwtExpirationInMs = 86400000; // 24 horas
 
@@ -54,6 +54,7 @@ public class JwtTokenProvider {
             Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
             return true;
         } catch (Exception ex) {
+            System.out.println(" ERROR VALIDANDO TOKEN: " + ex.getMessage());
             return false;
         }
     }

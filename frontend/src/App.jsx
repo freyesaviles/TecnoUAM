@@ -1,39 +1,105 @@
-function App() {
-  return (
-    <main className="app-shell">
-      <section className="intro-panel" aria-labelledby="app-title">
-        <p className="eyebrow">Centro de Capacitación TecnoUAM</p>
-        <h1 id="app-title">Préstamos claros. Equipos listos.</h1>
-        <p className="intro-copy">
-          La mesa de operaciones para saber qué equipo está disponible y quién
-          lo tiene en uso.
-        </p>
-        <div className="status-chip" role="status">
-          <span className="status-dot" aria-hidden="true" />
-          Base de interfaz preparada para conectar la API
-        </div>
-      </section>
+import React, { useState } from 'react';
+import Login from './components/Login';
+import EquiposList from './components/EquiposList';
 
-      <section className="workspace-panel" aria-labelledby="workspace-title">
-        <div className="panel-heading">
-          <div>
-            <p className="section-kicker">Inventario</p>
-            <h2 id="workspace-title">Equipos tecnológicos</h2>
-          </div>
-          <span className="panel-count">API pendiente</span>
+function App() {
+    const [isAuthenticated, setIsAuthenticated] = useState(
+        !!localStorage.getItem('jwt_token')
+    );
+
+    const handleLogout = () => {
+        localStorage.removeItem('jwt_token');
+        setIsAuthenticated(false);
+    };
+
+    return (
+        <div style={styles.appContainer}>
+            {/* Navbar con fondo oscuro oficial (#1d242e) y acentos turquesa */}
+            <header style={styles.header}>
+                <div style={styles.headerContent}>
+                    <div style={styles.brandGroup}>
+                        <span style={styles.logoText}>UAM</span>
+                        <span style={styles.divider}>|</span>
+                        <span style={styles.systemName}>TecnoUAM — Panel</span>
+                    </div>
+
+                    {isAuthenticated && (
+                        <button onClick={handleLogout} style={styles.logoutButton}>
+                            Cerrar Sesión
+                        </button>
+                    )}
+                </div>
+            </header>
+
+            {/* Contenido principal */}
+            <main style={styles.mainContent}>
+                {!isAuthenticated ? (
+                    <Login onLoginSuccess={() => setIsAuthenticated(true)} />
+                ) : (
+                    <EquiposList />
+                )}
+            </main>
         </div>
-        <div className="empty-state">
-          <div className="empty-mark" aria-hidden="true">+</div>
-          <h3>La lista aparecerá aquí</h3>
-          <p>
-            Esta vista se conectará a <code>GET /api/equipos</code> con un
-            token válido.
-          </p>
-        </div>
-      </section>
-    </main>
-  )
+    );
 }
 
-export default App
+const styles = {
+    appContainer: {
+        minHeight: '100vh',
+        backgroundColor: '#f4f6f8',
+        fontFamily: "'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
+    },
+    header: {
+        backgroundColor: '#1d242e', // Azul marino oscuro exacto de la web UAM
+        color: '#ffffff',
+        padding: '20px 36px',
+        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+        borderBottom: '4px solid #00a3ad', // Franja turquesa UAM
+    },
+    headerContent: {
+        width: '100%',
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+    },
+    brandGroup: {
+        display: 'flex',
+        alignItems: 'center',
+        gap: '14px',
+    },
+    logoText: {
+        fontSize: '28px',
+        fontWeight: '900',
+        color: '#00a3ad', // Turquesa característico del logo UAM
+        letterSpacing: '1px',
+        fontFamily: "'Trebuchet MS', sans-serif",
+    },
+    divider: {
+        color: '#4a5568',
+        fontSize: '22px',
+        fontWeight: '300',
+    },
+    systemName: {
+        fontSize: '20px',
+        fontWeight: '600',
+        color: '#ffffff',
+        whiteSpace: 'nowrap',
+        letterSpacing: '-0.2px',
+    },
+    logoutButton: {
+        backgroundColor: '#0e507d', // Azul oscuro complementario
+        color: '#ffffff',
+        border: 'none',
+        padding: '10px 20px',
+        borderRadius: '6px',
+        cursor: 'pointer',
+        fontSize: '14px',
+        fontWeight: '600',
+        transition: 'background-color 0.2s',
+    },
+    mainContent: {
+        padding: '40px 20px',
+    },
+};
 
+export default App;
