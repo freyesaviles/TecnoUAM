@@ -7,19 +7,39 @@ import io.jsonwebtoken.security.Keys;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Component;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.nio.charset.StandardCharsets;
 import java.security.Key;
+import java.time.Duration;
 import java.util.Date;
 import java.util.List;
 
 @Component
 public class JwtTokenProvider {
 
-    // Clave secreta sin caracteres especiales para evitar problemas de codificación UTF-8
-    private static final String SECRET_KEY_STRING = "TecnoUAMSecretKeyParaFirmarTokensJWTPrestamosEquipos2026TecnoUAMSecretKeyDebeSerLarga";
-    private final Key key = Keys.hmacShaKeyFor(SECRET_KEY_STRING.getBytes(StandardCharsets.UTF_8));
-    private final long jwtExpirationInMs = 86400000; // 24 horas
+    private final Key key;
+    private final long jwtExpirationInMs;
+
+    public JwtTokenProvider(
+            @Value("${app.jwt.secret}") String secret,
+            @Value("${app.jwt.expiration-minutes:120}") long expirationMinutes) {
+
+        if (secret == null || secret.isBlank()) {
+            throw new IllegalStateException("JWT_SECRET debe estar configurado");
+        }
+
+        byte[] secretBytes = secret.getBytes(StandardCharsets.UTF_8);
+        if (secretBytes.length < 64) {
+            throw new IllegalStateException("JWT_SECRET debe tener al menos 64 bytes para HS512");
+        }
+        if (expirationMinutes <= 0) {
+            throw new IllegalStateException("JWT_EXPIRATION_MINUTES debe ser mayor que cero");
+        }
+
+        this.key = Keys.hmacShaKeyFor(secretBytes);
+        this.jwtExpirationInMs = Duration.ofMinutes(expirationMinutes).toMillis();
+    }
 
     public String generarToken(Authentication authentication) {
         String username = authentication.getName();
@@ -54,7 +74,6 @@ public class JwtTokenProvider {
             Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
             return true;
         } catch (Exception ex) {
-            System.out.println(" ERROR VALIDANDO TOKEN: " + ex.getMessage());
             return false;
         }
     }

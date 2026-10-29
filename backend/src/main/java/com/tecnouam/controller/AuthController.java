@@ -6,6 +6,8 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
+import com.tecnouam.dto.LoginRequestDTO;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -30,12 +32,10 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<Map<String, Object>> authenticateUser(@RequestBody Map<String, String> loginDto) {
-        String username = loginDto.get("username");
-        String password = loginDto.get("password");
-
+    public ResponseEntity<Map<String, Object>> authenticateUser(
+            @Valid @RequestBody LoginRequestDTO loginDto) {
         Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(username, password)
+                new UsernamePasswordAuthenticationToken(loginDto.username(), loginDto.password())
         );
 
         String token = tokenProvider.generarToken(authentication);
