@@ -186,10 +186,10 @@ Usuario: user
 Contraseña: user123
 ```
 
-La cabecera mostrará `user · USER`. Puede consultar la lista de equipos y
-préstamos, pero el backend rechazará las operaciones administrativas con `403`.
-React muestra la consulta protegida de equipos; Postman permite demostrar las
-diferencias completas entre ambos roles.
+La cabecera mostrará `user · USER`. Puede consultar la lista de equipos en
+React, mientras que el backend rechazará las operaciones administrativas con
+`403`. La consulta de préstamos y las diferencias completas entre roles se
+demuestran en Postman.
 
 ## Probar con Postman
 
