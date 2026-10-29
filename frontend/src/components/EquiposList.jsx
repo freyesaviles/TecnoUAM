@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import api from '../api/axios';
 
-const EquiposList = () => {
+const EquiposList = ({ role }) => {
     const [equipos, setEquipos] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -12,15 +12,8 @@ const EquiposList = () => {
             setLoading(true);
             setError(null);
 
-            // 1. Recuperamos el token almacenado al hacer login
-            const token = localStorage.getItem('token');
-
-            // 2. Adjuntamos el token en los headers de la petición
-            const response = await api.get('/equipos', {
-                headers: {
-                    Authorization: `Bearer ${token}`
-                }
-            });
+            // El interceptor de Axios adjunta el token almacenado.
+            const response = await api.get('/equipos');
 
             setEquipos(response.data);
             setLoading(false);
@@ -41,6 +34,7 @@ const EquiposList = () => {
     return (
         <div style={{ padding: '20px' }}>
             <h2>Gestión de Equipos</h2>
+            <p>Sesión activa como <strong>{role}</strong>. Esta vista consulta datos reales de la API.</p>
             <button onClick={fetchEquipos} style={{ marginBottom: '15px' }}>Recargar Lista</button>
 
             {equipos.length === 0 ? (

@@ -2,15 +2,41 @@ import React, { useState } from 'react';
 import Login from './components/Login';
 import EquiposList from './components/EquiposList';
 
+const TOKEN_KEY = 'token';
+
+function loadSession() {
+    const token = localStorage.getItem(TOKEN_KEY);
+
+    if (!token) {
+        return null;
+    }
+
+    let roles = [];
+    try {
+        roles = JSON.parse(localStorage.getItem('roles') || '[]');
+    } catch {
+        roles = [];
+    }
+
+    return {
+        token,
+        username: localStorage.getItem('username') || '',
+        roles,
+    };
+}
+
 function App() {
-    const [isAuthenticated, setIsAuthenticated] = useState(
-        !!localStorage.getItem('jwt_token')
-    );
+    const [session, setSession] = useState(loadSession);
 
     const handleLogout = () => {
+        localStorage.removeItem(TOKEN_KEY);
         localStorage.removeItem('jwt_token');
-        setIsAuthenticated(false);
+        localStorage.removeItem('username');
+        localStorage.removeItem('roles');
+        setSession(null);
     };
+
+    const roleLabel = session?.roles?.[0]?.replace('ROLE_', '') || 'USUARIO';
 
     return (
         <div style={styles.appContainer}>
@@ -23,20 +49,25 @@ function App() {
                         <span style={styles.systemName}>TecnoUAM — Panel</span>
                     </div>
 
-                    {isAuthenticated && (
-                        <button onClick={handleLogout} style={styles.logoutButton}>
-                            Cerrar Sesión
-                        </button>
+                    {session && (
+                        <div style={styles.sessionGroup}>
+                            <span style={styles.sessionLabel}>
+                                {session.username} · {roleLabel}
+                            </span>
+                            <button onClick={handleLogout} style={styles.logoutButton}>
+                                Cerrar Sesión
+                            </button>
+                        </div>
                     )}
                 </div>
             </header>
 
             {/* Contenido principal */}
             <main style={styles.mainContent}>
-                {!isAuthenticated ? (
-                    <Login onLoginSuccess={() => setIsAuthenticated(true)} />
+                {!session ? (
+                    <Login onLoginSuccess={setSession} />
                 ) : (
-                    <EquiposList />
+                    <EquiposList role={roleLabel} />
                 )}
             </main>
         </div>
@@ -61,6 +92,16 @@ const styles = {
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
+    },
+    sessionGroup: {
+        display: 'flex',
+        alignItems: 'center',
+        gap: '16px',
+    },
+    sessionLabel: {
+        color: '#cbd5e1',
+        fontSize: '14px',
+        fontWeight: '600',
     },
     brandGroup: {
         display: 'flex',

@@ -10,7 +10,7 @@ api.interceptors.request.use(
         const token = localStorage.getItem('token');
 
         // Solo inyectar el token si existe Y la ruta NO es de autenticación
-        if (token && !config.url.includes('/auth/login')) {
+        if (token && !config.url?.includes('/auth/login')) {
             config.headers['Authorization'] = `Bearer ${token}`;
         }
         return config;
