@@ -2,7 +2,8 @@
 
 ## Orden recomendado
 
-1. **Fernando** mantiene la base, variables, documentación y la rama
+1. **Fernando** mantiene la base, variables, configuración PostgreSQL local,
+   documentación y la rama
    de integración.
 2. **Jorddy** agrega el modelo persistente y migraciones reproducibles.
 3. **Max** implementa API, DTOs, validaciones y reglas de préstamo.
@@ -37,7 +38,7 @@ un documento para evitar conflictos.
   `fechaPrevistaDevolucion`, `estado`.
 - Estados: `DISPONIBLE`/`PRESTADO` y `ACTIVO`/`DEVUELTO`.
 - Error JSON consistente para validación, recurso inexistente y conflicto.
-- Login con `username`, `password` y respuesta con `token` y `role`.
+- Login con `username`, `password` y respuesta con `token` y `roles`.
 
 ## Reunión de integración
 
