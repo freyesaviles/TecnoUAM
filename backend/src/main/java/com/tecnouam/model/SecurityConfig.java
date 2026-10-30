@@ -92,10 +92,10 @@ public class SecurityConfig {
     }
 
     private AuthenticationEntryPoint unauthorizedEntryPoint() {
-        return (request, response, exception) -> response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
+        return (request, response, exception) -> response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
     }
 
     private AccessDeniedHandler forbiddenHandler() {
-        return (request, response, exception) -> response.sendError(HttpServletResponse.SC_FORBIDDEN);
+        return (request, response, exception) -> response.setStatus(HttpServletResponse.SC_FORBIDDEN);
     }
 }

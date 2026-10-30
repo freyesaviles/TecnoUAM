@@ -145,6 +145,10 @@ class PersistenciaModeloTest {
         prestamos.saveAndFlush(p);
         Long equipoId = e.getId();
 
+        // Elimina las entidades administradas antes de borrar el equipo para
+        // comprobar la cascada real de PostgreSQL, no una referencia JPA
+        // pendiente en el contexto de persistencia.
+        em.clear();
         equipos.deleteById(equipoId);
         equipos.flush();
         em.clear();
