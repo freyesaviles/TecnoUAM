@@ -207,6 +207,63 @@ La colección genera códigos y fechas de prueba automáticamente. Sus variables
 se almacenan en la colección, por lo que no hay que copiar manualmente los
 tokens entre solicitudes.
 
+## Evidencias de pruebas
+
+Ejecución realizada el 30 de octubre de 2026 contra PostgreSQL local
+(PostgreSQL 17.10), con Java 27.0.1 compilando para Java 21 y Spring Boot
+3.5.6.
+
+### Pruebas automatizadas
+
+Desde `backend/`:
+
+```text
+mvn test
+Tests run: 14, Failures: 0, Errors: 0, Skipped: 0
+BUILD SUCCESS
+```
+
+Estas pruebas cubren JWT, persistencia y migraciones Flyway, reglas de negocio
+y la regresión de logins consecutivos después de que Spring elimine las
+credenciales de una sesión.
+
+### Pruebas HTTP
+
+El flujo funcional se ejecutó contra `http://localhost:8080/api` y pasó los 17
+casos siguientes:
+
+| Caso | Resultado |
+| --- | --- |
+| Health público | `200` |
+| Equipos sin token | `401` |
+| Credenciales inválidas | `401` |
+| Login `ADMIN` y rol `ROLE_ADMIN` | `200` |
+| Login `USER` y rol `ROLE_USER` | `200` |
+| Segundo login `USER` | `200` |
+| `USER` consulta equipos | `200` |
+| `USER` intenta crear equipo | `403` |
+| `ADMIN` crea equipo | `201` |
+| `USER` intenta registrar préstamo | `403` |
+| `ADMIN` registra préstamo | `201` |
+| Segundo préstamo del mismo equipo | `409` |
+| Eliminar equipo con préstamo activo | `409` |
+| `USER` consulta préstamos | `200` |
+| `ADMIN` devuelve préstamo | `200` |
+| Equipo liberado queda `DISPONIBLE` | `200` |
+| Eliminar equipo liberado | `204` |
+
+Los tokens se validaron en cada solicitud, pero se ocultaron en la salida y en
+las capturas. El equipo creado por el flujo de evidencia se devolvió y luego se
+eliminó.
+
+### Capturas
+
+![React autenticado como ADMIN](docs/evidence/react-admin.png)
+
+![React autenticado como USER](docs/evidence/react-user.png)
+
+![Respuesta de health de la API](docs/evidence/api-health.png)
+
 ## Variables de entorno
 
 El archivo `.env.example` documenta las variables necesarias. Nunca se deben
