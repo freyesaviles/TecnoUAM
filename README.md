@@ -6,6 +6,55 @@ Servicios Web (segundo corte).
 El proyecto se divide en un backend Spring Boot con API REST, persistencia
 relacional y seguridad JWT, y un frontend React que consume la API real.
 
+## Propósito y descripción
+
+TecnoUAM es una aplicación académica para administrar el préstamo de equipos
+tecnológicos de un centro de capacitación. Permite consultar el inventario,
+registrar préstamos, devolver equipos y mantener la disponibilidad sincronizada
+entre la base de datos, la API y la interfaz web.
+
+El objetivo del proyecto es demostrar un flujo completo de Servicios Web:
+
+- una API REST desarrollada con Spring Boot;
+- persistencia en PostgreSQL administrada desde pgAdmin;
+- autenticación con JWT y autorización por roles;
+- consumo de datos reales desde React mediante Axios;
+- validaciones de negocio, códigos HTTP y pruebas reproducibles.
+
+El alcance corresponde al examen integrador del segundo corte. Las cuentas
+incluidas son de demostración académica y no representan un sistema de
+usuarios productivo.
+
+## Alcance funcional
+
+| Funcionalidad | Descripción |
+| --- | --- |
+| Autenticación | Login con `admin` o `user`; la respuesta entrega un JWT y sus roles. |
+| Inventario | Consultar, crear, actualizar y eliminar equipos tecnológicos. |
+| Préstamos | Registrar préstamos, consultar el historial y devolver préstamos activos. |
+| Disponibilidad | Un equipo prestado cambia a `PRESTADO` y al devolverse vuelve a `DISPONIBLE`. |
+| Seguridad | Las consultas requieren token; las operaciones administrativas requieren `ADMIN`. |
+| Validaciones | Se controlan duplicados, fechas inválidas, equipos ocupados y eliminaciones no permitidas. |
+
+## Arquitectura y flujo
+
+```text
+React (localhost:5173)
+        |
+        | Axios + Authorization: Bearer <JWT>
+        v
+Spring Boot REST API (localhost:8080)
+        |
+        | JPA/Hibernate + Flyway
+        v
+PostgreSQL local (administrable con pgAdmin)
+```
+
+El backend es la fuente de verdad. React únicamente consume `GET /api/equipos`
+para mostrar el inventario y conserva el token de la sesión en el navegador.
+Las operaciones completas de equipos y préstamos pueden demostrarse mediante
+Postman.
+
 ## Equipo y responsabilidades
 
 | Integrante | Responsabilidad principal | Rama sugerida |
@@ -207,6 +256,71 @@ La colección genera códigos y fechas de prueba automáticamente. Sus variables
 se almacenan en la colección, por lo que no hay que copiar manualmente los
 tokens entre solicitudes.
 
+## Guía de demostración para el profesor
+
+### 1. Preparar el entorno
+
+1. Verifica que PostgreSQL esté iniciado y que exista la base de datos
+   `tecnouam`.
+2. Revisa las credenciales de conexión en `.env`. pgAdmin administra el
+   servidor, pero el servicio PostgreSQL debe estar instalado y ejecutándose.
+3. Inicia backend y frontend siguiendo la sección [Inicio rápido](#inicio-rápido).
+4. Comprueba la API visitando `http://localhost:8080/api/health`. Debe
+   responder:
+
+   ```json
+   {"status":"UP","service":"tecnouam-backend"}
+   ```
+
+### 2. Demostrar los roles en React
+
+1. Abre `http://localhost:5173`.
+2. Ingresa con `admin` / `admin123`. La cabecera debe mostrar `admin · ADMIN`
+   y la tabla debe cargar los equipos desde la API.
+3. Cierra sesión e ingresa con `user` / `user123`. La cabecera debe mostrar
+   `user · USER` y el inventario debe seguir visible.
+4. Explica que React consulta datos reales, mientras el backend conserva la
+   autoridad sobre los permisos.
+
+### 3. Demostrar endpoints y reglas de negocio
+
+Importa la colección de Postman y ejecuta sus carpetas en orden. El profesor
+puede observar en cada respuesta el código HTTP y el cuerpo JSON:
+
+1. `01 - Autenticación`: logins correctos de ambos roles y login incorrecto
+   (`200`, `200` y `401`).
+2. `02 - Seguridad`: solicitud sin token (`401`), consulta como `USER` (`200`)
+   e intentos administrativos como `USER` (`403`).
+3. `03 - Equipos`: creación (`201`), consulta (`200`) y actualización (`200`).
+4. `04 - Préstamos y devolución`: creación (`201`), préstamo duplicado (`409`),
+   eliminación bloqueada (`409`), devolución (`200`), liberación del equipo
+   (`DISPONIBLE`) y eliminación final (`204`).
+
+La colección genera códigos únicos y fechas relativas al día de ejecución. No
+es necesario copiar JWT manualmente: los scripts de Postman guardan los
+tokens en variables de colección.
+
+### Pruebas manuales equivalentes con cURL
+
+Estas solicitudes permiten repetir la demostración sin Postman. Primero inicia
+sesión y copia únicamente el valor de `token` de la respuesta:
+
+```bash
+curl -X POST http://localhost:8080/api/auth/login \
+  -H 'Content-Type: application/json' \
+  -d '{"username":"admin","password":"admin123"}'
+```
+
+Luego reemplaza `<TOKEN_ADMIN>`:
+
+```bash
+curl http://localhost:8080/api/equipos \
+  -H 'Authorization: Bearer <TOKEN_ADMIN>'
+```
+
+Para verificar autorización, repite una operación de escritura con el token de
+`user`; la respuesta esperada es `403 Forbidden`.
+
 ## Evidencias de pruebas
 
 Ejecución realizada el 30 de octubre de 2026 contra PostgreSQL local
@@ -258,6 +372,11 @@ eliminó.
 
 ### Capturas
 
+Las siguientes evidencias fueron tomadas con la aplicación ejecutándose en
+`localhost`, con la extensión de modo oscuro desactivada. Muestran la interfaz
+React y la respuesta real del backend; no son capturas del editor ni de T3
+Code.
+
 ![React autenticado como ADMIN](docs/evidence/react-admin.png)
 
 ![React autenticado como USER](docs/evidence/react-user.png)
@@ -297,17 +416,57 @@ colección Postman y documentación de pruebas.
 
 ## Endpoints objetivo
 
-| Método | Ruta | Acceso |
-| --- | --- | --- |
-| `POST` | `/api/auth/login` | Público |
-| `GET` | `/api/equipos` | `USER`, `ADMIN` |
-| `GET` | `/api/equipos/{id}` | `USER`, `ADMIN` |
-| `POST` | `/api/equipos` | `ADMIN` |
-| `PUT` | `/api/equipos/{id}` | `ADMIN` |
-| `DELETE` | `/api/equipos/{id}` | `ADMIN` |
-| `GET` | `/api/prestamos` | `USER`, `ADMIN` |
-| `POST` | `/api/prestamos` | `ADMIN` |
-| `PUT` | `/api/prestamos/{id}/devolver` | `ADMIN` |
+Todas las rutas parten de `http://localhost:8080`. Excepto health y login,
+requieren la cabecera `Authorization: Bearer <JWT>`.
+
+| Método | Ruta | Acceso | Uso / respuesta exitosa |
+| --- | --- | --- | --- |
+| `GET` | `/api/health` | Público | Verifica que el backend esté activo (`200`). |
+| `POST` | `/api/auth/login` | Público | Genera JWT y roles (`200`). |
+| `GET` | `/api/equipos` | `USER`, `ADMIN` | Lista el inventario (`200`). |
+| `GET` | `/api/equipos/{id}` | `USER`, `ADMIN` | Consulta un equipo (`200`). |
+| `POST` | `/api/equipos` | `ADMIN` | Crea equipo (`201`). |
+| `PUT` | `/api/equipos/{id}` | `ADMIN` | Actualiza equipo (`200`). |
+| `DELETE` | `/api/equipos/{id}` | `ADMIN` | Elimina equipo (`204`) si no tiene préstamo activo. |
+| `GET` | `/api/prestamos` | `USER`, `ADMIN` | Lista préstamos (`200`). |
+| `POST` | `/api/prestamos` | `ADMIN` | Registra préstamo (`201`). |
+| `PUT` | `/api/prestamos/{id}/devolver` | `ADMIN` | Devuelve préstamo y libera equipo (`200`). |
+
+### Cuerpos JSON principales
+
+Login:
+
+```json
+{
+  "username": "admin",
+  "password": "admin123"
+}
+```
+
+Crear o actualizar equipo:
+
+```json
+{
+  "codigoPatrimonial": "UAM-LAP-010",
+  "nombre": "Laptop de demostración",
+  "tipo": "LAPTOP"
+}
+```
+
+Registrar préstamo:
+
+```json
+{
+  "equipoId": 1,
+  "nombreSolicitante": "Carlos Pérez",
+  "fechaPrestamo": "2026-10-30",
+  "fechaPrevistaDevolucion": "2026-11-06"
+}
+```
+
+Los tipos disponibles son `LAPTOP`, `PROYECTOR` y `TABLETA`. Las fechas usan
+el formato ISO `YYYY-MM-DD`. Los errores de validación o de reglas de negocio
+se devuelven como JSON con información del estado y el mensaje correspondiente.
 
 ## Cuentas demo
 
