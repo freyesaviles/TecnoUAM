@@ -1,10 +1,12 @@
 spring:
+  config:
+    import: optional:file:../.env[.properties],optional:file:.env[.properties]
   application:
     name: tecnouam-backend
   datasource:
     url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/tecnouam}
-    username: ${DATABASE_USERNAME:tecnouam}
-    password: ${DATABASE_PASSWORD:tecnouam_dev_only}
+    username: ${DATABASE_USERNAME:postgres}
+    password: ${DATABASE_PASSWORD:}
   jpa:
     open-in-view: false
     hibernate:
@@ -24,6 +26,5 @@ server:
 
 app:
   jwt:
-    secret: ${JWT_SECRET:replace-this-with-a-random-secret-of-at-least-32-characters}
+    secret: ${JWT_SECRET:replace-this-with-a-random-secret-of-at-least-64-characters-xxxxxxxxxxxxxxxx}
     expiration-minutes: ${JWT_EXPIRATION_MINUTES:120}
-

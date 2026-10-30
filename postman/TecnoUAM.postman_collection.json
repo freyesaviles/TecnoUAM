@@ -1,40 +1,382 @@
 {
   "info": {
     "name": "TecnoUAM - Servicios Web",
-    "description": "Colección base para documentar las pruebas del examen. Se completará con los casos de CRUD, préstamo, devolución y seguridad.",
+    "description": "Pruebas funcionales y de seguridad para la API del sistema de préstamos TecnoUAM.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
-    {
-      "key": "baseUrl",
-      "value": "http://localhost:8080/api"
-    },
-    {
-      "key": "token",
-      "value": ""
-    },
-    {
-      "key": "equipoId",
-      "value": "1"
-    },
-    {
-      "key": "prestamoId",
-      "value": "1"
-    }
+    { "key": "baseUrl", "value": "http://localhost:8080/api" },
+    { "key": "adminToken", "value": "" },
+    { "key": "userToken", "value": "" },
+    { "key": "equipoPrestamoId", "value": "" },
+    { "key": "equipoEliminableId", "value": "" },
+    { "key": "prestamoId", "value": "" }
   ],
   "item": [
     {
-      "name": "Salud del backend",
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "{{baseUrl}}/health",
-          "host": ["{{baseUrl}}"],
-          "path": ["health"]
+      "name": "01 - Autenticación",
+      "item": [
+        {
+          "name": "Login ADMIN",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"admin\",\n  \"password\": \"admin123\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": "{{baseUrl}}/auth/login"
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test('Login ADMIN responde 200', () => pm.response.to.have.status(200));",
+                "const body = pm.response.json();",
+                "pm.expect(body.token).to.be.a('string').and.not.empty;",
+                "pm.expect(body.roles).to.include('ROLE_ADMIN');",
+                "pm.collectionVariables.set('adminToken', body.token);"
+              ]
+            }
+          }]
+        },
+        {
+          "name": "Login USER",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"user\",\n  \"password\": \"user123\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": "{{baseUrl}}/auth/login"
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test('Login USER responde 200', () => pm.response.to.have.status(200));",
+                "const body = pm.response.json();",
+                "pm.expect(body.token).to.be.a('string').and.not.empty;",
+                "pm.expect(body.roles).to.include('ROLE_USER');",
+                "pm.collectionVariables.set('userToken', body.token);"
+              ]
+            }
+          }]
+        },
+        {
+          "name": "Login incorrecto",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"admin\",\n  \"password\": \"incorrecta\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": "{{baseUrl}}/auth/login"
+          },
+          "event": [{
+            "listen": "test",
+            "script": { "exec": ["pm.test('Credenciales incorrectas responden 401', () => pm.response.to.have.status(401));"] }
+          }]
         }
-      }
+      ]
+    },
+    {
+      "name": "02 - Seguridad",
+      "item": [
+        {
+          "name": "GET equipos sin token - 401",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "auth": { "type": "noauth" },
+            "url": "{{baseUrl}}/equipos"
+          },
+          "event": [{
+            "listen": "test",
+            "script": { "exec": ["pm.test('Sin token responde 401', () => pm.response.to.have.status(401));"] }
+          }]
+        },
+        {
+          "name": "GET equipos con USER - 200",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{userToken}}", "type": "string" }] },
+            "url": "{{baseUrl}}/equipos"
+          },
+          "event": [{
+            "listen": "test",
+            "script": { "exec": ["pm.test('USER puede consultar equipos', () => pm.response.to.have.status(200));"] }
+          }]
+        },
+        {
+          "name": "POST equipos con USER - 403",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{userToken}}", "type": "string" }] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"codigoPatrimonial\": \"UAM-USER-001\",\n  \"nombre\": \"No debe crearse\",\n  \"tipo\": \"LAPTOP\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": "{{baseUrl}}/equipos"
+          },
+          "event": [{
+            "listen": "test",
+            "script": { "exec": ["pm.test('USER no puede crear equipos', () => pm.response.to.have.status(403));"] }
+          }]
+        },
+        {
+          "name": "POST préstamos con USER - 403",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{userToken}}", "type": "string" }] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"equipoId\": {{equipoPrestamoId}},\n  \"nombreSolicitante\": \"USER no autorizado\",\n  \"fechaPrestamo\": \"{{fechaPrestamo}}\",\n  \"fechaPrevistaDevolucion\": \"{{fechaDevolucion}}\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": "{{baseUrl}}/prestamos"
+          },
+          "event": [{
+            "listen": "prerequest",
+            "script": { "exec": [
+              "const hoy = new Date();",
+              "const devolucion = new Date(hoy);",
+              "devolucion.setDate(devolucion.getDate() + 7);",
+              "const formato = fecha => fecha.toISOString().slice(0, 10);",
+              "pm.collectionVariables.set('fechaPrestamo', formato(hoy));",
+              "pm.collectionVariables.set('fechaDevolucion', formato(devolucion));"
+            ] }
+          }, {
+            "listen": "test",
+            "script": { "exec": ["pm.test('USER no puede registrar préstamos', () => pm.response.to.have.status(403));"] }
+          }]
+        }
+      ]
+    },
+    {
+      "name": "03 - Equipos",
+      "item": [
+        {
+          "name": "POST crear equipo para préstamo - 201",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{adminToken}}", "type": "string" }] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"codigoPatrimonial\": \"{{codigoPrestamo}}\",\n  \"nombre\": \"Equipo de prueba de préstamo\",\n  \"tipo\": \"LAPTOP\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": "{{baseUrl}}/equipos"
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": { "exec": ["pm.collectionVariables.set('codigoPrestamo', 'UAM-POSTMAN-' + Date.now());"] }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Equipo creado', () => pm.response.to.have.status(201));",
+                  "pm.collectionVariables.set('equipoPrestamoId', pm.response.json().id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "POST crear equipo eliminable - 201",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{adminToken}}", "type": "string" }] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"codigoPatrimonial\": \"{{codigoEliminable}}\",\n  \"nombre\": \"Equipo eliminable\",\n  \"tipo\": \"TABLETA\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": "{{baseUrl}}/equipos"
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": { "exec": ["pm.collectionVariables.set('codigoEliminable', 'UAM-POSTMAN-' + (Date.now() + 1));"] }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Segundo equipo creado', () => pm.response.to.have.status(201));",
+                  "pm.collectionVariables.set('equipoEliminableId', pm.response.json().id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "GET equipos - 200",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{userToken}}", "type": "string" }] },
+            "url": "{{baseUrl}}/equipos"
+          },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('Lista de equipos responde 200', () => pm.response.to.have.status(200));"] } }]
+        },
+        {
+          "name": "GET equipo por ID - 200",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{userToken}}", "type": "string" }] },
+            "url": "{{baseUrl}}/equipos/{{equipoPrestamoId}}"
+          },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('Equipo encontrado', () => pm.response.to.have.status(200));"] } }]
+        },
+        {
+          "name": "PUT actualizar equipo - 200",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{adminToken}}", "type": "string" }] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"codigoPatrimonial\": \"{{codigoPrestamo}}\",\n  \"nombre\": \"Equipo actualizado\",\n  \"tipo\": \"LAPTOP\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": "{{baseUrl}}/equipos/{{equipoPrestamoId}}"
+          },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('Equipo actualizado', () => pm.response.to.have.status(200));"] } }]
+        }
+      ]
+    },
+    {
+      "name": "04 - Préstamos y devolución",
+      "item": [
+        {
+          "name": "POST registrar préstamo - 201",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{adminToken}}", "type": "string" }] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"equipoId\": {{equipoPrestamoId}},\n  \"nombreSolicitante\": \"Carlos Postman\",\n  \"fechaPrestamo\": \"{{fechaPrestamo}}\",\n  \"fechaPrevistaDevolucion\": \"{{fechaDevolucion}}\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": "{{baseUrl}}/prestamos"
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const hoy = new Date();",
+                  "const devolucion = new Date(hoy);",
+                  "devolucion.setDate(devolucion.getDate() + 7);",
+                  "const formato = fecha => fecha.toISOString().slice(0, 10);",
+                  "pm.collectionVariables.set('fechaPrestamo', formato(hoy));",
+                  "pm.collectionVariables.set('fechaDevolucion', formato(devolucion));"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Préstamo creado', () => pm.response.to.have.status(201));",
+                  "pm.collectionVariables.set('prestamoId', pm.response.json().id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "POST segundo préstamo del mismo equipo - 409",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{adminToken}}", "type": "string" }] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"equipoId\": {{equipoPrestamoId}},\n  \"nombreSolicitante\": \"Segundo solicitante\",\n  \"fechaPrestamo\": \"{{fechaPrestamo}}\",\n  \"fechaPrevistaDevolucion\": \"{{fechaDevolucion}}\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": "{{baseUrl}}/prestamos"
+          },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('Equipo ocupado responde 409', () => pm.response.to.have.status(409));"] } }]
+        },
+        {
+          "name": "DELETE equipo con préstamo activo - 409",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{adminToken}}", "type": "string" }] },
+            "url": "{{baseUrl}}/equipos/{{equipoPrestamoId}}"
+          },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('No se elimina equipo con préstamo activo', () => pm.response.to.have.status(409));"] } }]
+        },
+        {
+          "name": "GET préstamos - 200",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{userToken}}", "type": "string" }] },
+            "url": "{{baseUrl}}/prestamos"
+          },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('Lista de préstamos responde 200', () => pm.response.to.have.status(200));"] } }]
+        },
+        {
+          "name": "PUT devolver préstamo - 200",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{adminToken}}", "type": "string" }] },
+            "url": "{{baseUrl}}/prestamos/{{prestamoId}}/devolver"
+          },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('Préstamo devuelto', () => pm.response.to.have.status(200));", "pm.expect(pm.response.json().estado).to.eql('DEVUELTO');"] } }]
+        },
+        {
+          "name": "GET equipo liberado - DISPONIBLE",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{userToken}}", "type": "string" }] },
+            "url": "{{baseUrl}}/equipos/{{equipoPrestamoId}}"
+          },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('Equipo liberado responde 200', () => pm.response.to.have.status(200));", "pm.expect(pm.response.json().estado).to.eql('DISPONIBLE');"] } }]
+        },
+        {
+          "name": "DELETE equipo después de devolución - 204",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{adminToken}}", "type": "string" }] },
+            "url": "{{baseUrl}}/equipos/{{equipoPrestamoId}}"
+          },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('Equipo eliminado después de devolverlo', () => pm.response.to.have.status(204));"] } }]
+        },
+        {
+          "name": "DELETE equipo sin préstamos - 204",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{adminToken}}", "type": "string" }] },
+            "url": "{{baseUrl}}/equipos/{{equipoEliminableId}}"
+          },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('Equipo sin préstamos se elimina', () => pm.response.to.have.status(204));"] } }]
+        }
+      ]
     }
   ]
 }
-

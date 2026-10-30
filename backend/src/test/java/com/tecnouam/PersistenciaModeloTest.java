@@ -25,9 +25,10 @@ import jakarta.validation.ConstraintViolationException;
 
 /**
  * Pruebas de persistencia y restricciones del modelo.
- * Usan el PostgreSQL de docker compose (mismas migraciones Flyway que la app)
- * y cada prueba hace rollback, así que no dejan datos.
- * Requisito: {@code docker compose up -d postgres}.
+ * Usan el PostgreSQL local (mismas migraciones Flyway que la app) y cada
+ * prueba hace rollback, así que no dejan datos.
+ * Requisito: PostgreSQL debe estar ejecutándose y la base indicada en
+ * {@code DATABASE_URL} debe existir.
  */
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
@@ -144,6 +145,10 @@ class PersistenciaModeloTest {
         prestamos.saveAndFlush(p);
         Long equipoId = e.getId();
 
+        // Elimina las entidades administradas antes de borrar el equipo para
+        // comprobar la cascada real de PostgreSQL, no una referencia JPA
+        // pendiente en el contexto de persistencia.
+        em.clear();
         equipos.deleteById(equipoId);
         equipos.flush();
         em.clear();

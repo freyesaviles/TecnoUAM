@@ -2,7 +2,7 @@
 
 ## Orden recomendado
 
-1. **Fernando** mantiene la base, variables, Docker, documentación y la rama
+1. **Fernando** mantiene la base, variables, documentación y la rama
    de integración.
 2. **Jorddy** agrega el modelo persistente y migraciones reproducibles.
 3. **Max** implementa API, DTOs, validaciones y reglas de préstamo.

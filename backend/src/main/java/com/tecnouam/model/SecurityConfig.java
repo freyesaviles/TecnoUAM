@@ -1,6 +1,7 @@
 package com.tecnouam.model;
 
 import com.tecnouam.JWT.JwtAuthenticationFilter;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -14,6 +15,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.AuthenticationEntryPoint;
+import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -52,11 +55,14 @@ public class SecurityConfig {
 
                         // Endpoints de Préstamos
                         .requestMatchers(HttpMethod.GET, "/api/prestamos", "/api/prestamos/**").authenticated()
-                        .requestMatchers(HttpMethod.POST, "/api/prestamos", "/api/prestamos/**").authenticated()
-                        .requestMatchers(HttpMethod.PUT, "/api/prestamos", "/api/prestamos/**").hasAnyRole("ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/api/prestamos", "/api/prestamos/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/prestamos", "/api/prestamos/**").hasRole("ADMIN")
 
                         .anyRequest().authenticated()
                 )
+                .exceptionHandling(exceptions -> exceptions
+                        .authenticationEntryPoint(unauthorizedEntryPoint())
+                        .accessDeniedHandler(forbiddenHandler()))
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
@@ -83,5 +89,13 @@ public class SecurityConfig {
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
         return authenticationConfiguration.getAuthenticationManager();
+    }
+
+    private AuthenticationEntryPoint unauthorizedEntryPoint() {
+        return (request, response, exception) -> response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+    }
+
+    private AccessDeniedHandler forbiddenHandler() {
+        return (request, response, exception) -> response.setStatus(HttpServletResponse.SC_FORBIDDEN);
     }
 }

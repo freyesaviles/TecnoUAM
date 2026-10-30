@@ -19,8 +19,14 @@ const Login = ({ onLoginSuccess }) => {
             const token = res.data.token;
 
             localStorage.setItem('token', token);
+            localStorage.setItem('username', res.data.username || credenciales.username);
+            localStorage.setItem('roles', JSON.stringify(res.data.roles || []));
 
-            onLoginSuccess();
+            onLoginSuccess({
+                token,
+                username: res.data.username || credenciales.username,
+                roles: res.data.roles || [],
+            });
         } catch (err) {
             setError('Credenciales inválidas. Inténtalo de nuevo.');
         }
@@ -39,8 +45,9 @@ const Login = ({ onLoginSuccess }) => {
 
                 <form onSubmit={handleSubmit} style={styles.form}>
                     <div style={styles.inputGroup}>
-                        <label style={styles.label}>Usuario</label>
+                        <label htmlFor="username" style={styles.label}>Usuario</label>
                         <input
+                            id="username"
                             type="text"
                             name="username"
                             placeholder="Ej. admin"
@@ -52,8 +59,9 @@ const Login = ({ onLoginSuccess }) => {
                     </div>
 
                     <div style={styles.inputGroup}>
-                        <label style={styles.label}>Contraseña</label>
+                        <label htmlFor="password" style={styles.label}>Contraseña</label>
                         <input
+                            id="password"
                             type="password"
                             name="password"
                             placeholder="••••••••"
