@@ -36,9 +36,11 @@ class JwtTokenProviderTest {
         Authentication authentication = new UsernamePasswordAuthenticationToken("user", null);
         String token = provider.generarToken(authentication);
 
-        char ultimoCaracter = token.charAt(token.length() - 1);
-        char caracterAlternativo = ultimoCaracter == 'x' ? 'y' : 'x';
-        String tokenAlterado = token.substring(0, token.length() - 1) + caracterAlternativo;
+        String[] segmentos = token.split("\\.");
+        char primerCaracter = segmentos[1].charAt(0);
+        char caracterAlternativo = primerCaracter == 'a' ? 'b' : 'a';
+        segmentos[1] = caracterAlternativo + segmentos[1].substring(1);
+        String tokenAlterado = String.join(".", segmentos);
 
         assertThat(provider.validarToken(tokenAlterado)).isFalse();
     }
