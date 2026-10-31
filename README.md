@@ -149,8 +149,7 @@ El flujo HTTP propio verificó 17 casos, incluyendo JWT, `401`, `403`, `201`,
 
 ## Evidencias
 
-Las capturas fueron tomadas con la aplicación ejecutándose en `localhost`, sin
-la extensión de modo oscuro y sin mostrar el editor T3 Code.
+Las capturas fueron tomadas con la aplicación ejecutándose en `localhost`.
 
 ![React autenticado como ADMIN](docs/evidence/react-admin.png)
 
