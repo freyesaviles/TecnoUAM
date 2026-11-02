@@ -167,3 +167,5 @@ tipo(alcance): descripción breve en imperativo
 ```
 
 No se deben subir `.env`, contraseñas reales ni secretos JWT.
+
+Link del vídeo: https://drive.google.com/drive/folders/1lFcXF0j4W-qcSId3ScBg3G1BVPW5IG-G?usp=sharing
